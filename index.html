@@ -357,16 +357,11 @@
 
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+ 
 
   <script>
     // 🔥 Firebase Config — REEMPLAZA CON TU API KEY REAL
-    const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
   authDomain: "americano-pro.firebaseapp.com",
   projectId: "americano-pro",
@@ -375,191 +370,144 @@
   appId: "1:349606784958:web:04437c58c864b1bc2553ef"
 };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    let currentUser = null;
-    let tournamentId = null;
-    let tournamentData = null;
+let currentUser = null;
+let tournamentId = null;
+let tournamentData = null;
 
-    // DOM
-    const loginScreen = document.getElementById('login-screen');
-    const setupScreen = document.getElementById('setup');
-    const joinScreen = document.getElementById('join-screen');
-    const joinByIdScreen = document.getElementById('join-by-id');
-    const appScreen = document.getElementById('app');
-    const userInfo = document.getElementById('user-info');
+// DOM Elements
+const loginScreen = document.getElementById('login-screen');
+const setupScreen = document.getElementById('setup');
+const joinScreen = document.getElementById('join-screen');
+const joinByIdScreen = document.getElementById('join-by-id');
+const appScreen = document.getElementById('app');
+const userInfo = document.getElementById('user-info');
+const tournamentHeader = document.getElementById('tournament-header');
+const tournamentIdDisplay = document.getElementById('tournament-id-display');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlTournamentId = urlParams.get('id');
+const urlParams = new URLSearchParams(window.location.search);
+const urlTournamentId = urlParams.get('id');
 
-    // Auth state
-    auth.onAuthStateChanged(user => {
-      currentUser = user;
-      if (user) {
-        loginScreen.classList.add('hidden');
-        userInfo.innerHTML = `<span>${user.displayName || user.email}</span>`;
-        
-        if (urlTournamentId) {
-          tournamentId = urlTournamentId;
-          document.getElementById('current-tournament-id').textContent = tournamentId;
-          joinScreen.classList.remove('hidden');
-          joinByIdScreen.classList.add('hidden');
-        } else {
-          setupScreen.classList.remove('hidden');
-          joinByIdScreen.classList.remove('hidden');
-        }
-      } else {
-        loginScreen.classList.remove('hidden');
-        setupScreen.classList.add('hidden');
-        joinScreen.classList.add('hidden');
-        joinByIdScreen.classList.add('hidden');
-        appScreen.classList.add('hidden');
-      }
-    });
-
-    // Login
-    document.getElementById('login-btn')?.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(error => {
-        alert("❌ Error: " + error.message);
-      });
-    });
-
-    // Logout
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
-      auth.signOut().then(() => window.location.reload());
-    });
-
-    // Crear torneo
-    document.getElementById('create-tournament')?.addEventListener('click', async () => {
-      const name = document.getElementById('tournament-name').value || 'Torneo';
-      tournamentId = Math.random().toString(36).substr(2, 6).toUpperCase();
-      
-      await db.collection('tournaments').doc(tournamentId).set({
-        ownerId: currentUser.uid,
-        name,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        players: [{ id: currentUser.uid, name: currentUser.displayName || currentUser.email }],
-        rounds: [],
-        state: 'setup'
-      });
-
-      window.history.pushState({}, '', `?id=${tournamentId}`);
-      document.getElementById('current-tournament-id').textContent = tournamentId;
-      setupScreen.classList.add('hidden');
+// Auth state
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if (user) {
+    loginScreen.classList.add('hidden');
+    userInfo.innerHTML = `<span>${user.displayName || user.email}</span>`;
+    
+    if (urlTournamentId) {
+      tournamentId = urlTournamentId;
+      tournamentIdDisplay.textContent = tournamentId;
+      tournamentHeader.classList.remove('hidden');
       joinScreen.classList.remove('hidden');
       joinByIdScreen.classList.add('hidden');
-    });
-
-    // Unirse por link
-    document.getElementById('join-tournament')?.addEventListener('click', async () => {
-      if (!tournamentId) return;
-      await joinTournament(tournamentId);
-    });
-
-    // Unirse por ID manual
-    document.getElementById('join-manual')?.addEventListener('click', async () => {
-      const id = document.getElementById('manual-tournament-id').value.trim().toUpperCase();
-      if (!id) {
-        alert("⚠️ Ingresa un ID válido.");
-        return;
-      }
-      tournamentId = id;
-      await joinTournament(id);
-    });
-
-    async function joinTournament(id) {
-      const ref = db.collection('tournaments').doc(id);
-      const doc = await ref.get();
-      if (!doc.exists) {
-        alert('❌ Torneo no encontrado.');
-        return;
-      }
-
-      await ref.update({
-        players: firebase.firestore.FieldValue.arrayUnion({
-          id: currentUser.uid,
-          name: currentUser.displayName || currentUser.email
-        })
-      });
-
-      joinScreen.classList.add('hidden');
-      joinByIdScreen.classList.add('hidden');
-      appScreen.classList.remove('hidden');
-
-      ref.onSnapshot(doc => {
-        tournamentData = doc.data();
-        renderUI();
-      });
+    } else {
+      setupScreen.classList.remove('hidden');
+      joinByIdScreen.classList.remove('hidden');
     }
-
-    // Copiar enlace
-    document.getElementById('copy-link')?.addEventListener('click', () => {
-      const url = `${window.location.origin}${window.location.pathname}?id=${tournamentId}`;
-      navigator.clipboard.writeText(url).then(() => {
-        alert('✅ Enlace copiado.\nEnvíaselo a los jugadores.');
-      });
-    });
-
-    // Render UI
-    function renderUI() {
-      if (!tournamentData) return;
-
-      // Mostrar jugadores
-      const playersList = document.getElementById('players-list');
-      playersList.innerHTML = tournamentData.players.map(p => 
-        `<div class="editable-name">${p.name}${tournamentData.ownerId === p.id ? ' 👑' : ''}</div>`
-      ).join('');
-
-      // Rondas
-      const roundIndicator = document.getElementById('round-indicator');
-      roundIndicator.textContent = `Ronda ${tournamentData.rounds?.length || 0} / 7`;
-
-      // Historial
-      const historyDiv = document.getElementById('history');
-      historyDiv.innerHTML = tournamentData.rounds?.map((r, i) => `
-        <div class="history-item">
-          <strong>Ronda ${i+1}</strong><br>
-          ${r.matches?.map(m => `${m.team1.join(' + ')} vs ${m.team2.join(' + ')} → ${m.score}`).join('<br>')}
-        </div>
-      `).join('') || '<p>⏳ Sin partidos registrados.</p>';
-
-      // Actualizar info de usuario (¿soy creador?)
-      const ownerBadge = tournamentData.ownerId === currentUser.uid ? ' 👑' : '';
-      userInfo.innerHTML = `<span>${currentUser.displayName || currentUser.email}${ownerBadge}</span>`;
-
-      // Botón reiniciar solo si soy creador
-      const resetBtn = document.getElementById('reset-btn');
-      if (resetBtn) {
-        resetBtn.style.display = tournamentData.ownerId === currentUser.uid ? 'block' : 'none';
-      }
-    }
-
-    // Reiniciar torneo
-    document.getElementById('reset-btn')?.addEventListener('click', async () => {
-      if (currentUser.uid !== tournamentData.ownerId) return;
-      if (confirm("¿Reiniciar el torneo? Se borrarán todos los partidos.")) {
-        await db.collection('tournaments').doc(tournamentId).update({
-          players: [],
-          rounds: [],
-          state: 'setup'
-        });
-        window.location.reload();
-      }
-    });
-
-    // Mostrar ID del torneo
-function updateTournamentHeader() {
-  const header = document.getElementById('tournament-header');
-  const idDisplay = document.getElementById('tournament-id-display');
-  if (tournamentId) {
-    header.classList.remove('hidden');
-    idDisplay.textContent = tournamentId;
   } else {
-    header.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+    setupScreen.classList.add('hidden');
+    joinScreen.classList.add('hidden');
+    joinByIdScreen.classList.add('hidden');
+    appScreen.classList.add('hidden');
+    tournamentHeader.classList.add('hidden');
   }
+});
+
+// Login
+document.getElementById('login-btn')?.addEventListener('click', () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(error => {
+    alert("❌ Error: " + error.message);
+  });
+});
+
+// Logout
+document.getElementById('logout-btn')?.addEventListener('click', () => {
+  auth.signOut().then(() => window.location.reload());
+});
+
+// Crear torneo
+document.getElementById('create-tournament')?.addEventListener('click', async () => {
+  const name = document.getElementById('tournament-name').value || 'Torneo';
+  tournamentId = Math.random().toString(36).substr(2, 6).toUpperCase();
+  
+  await db.collection('tournaments').doc(tournamentId).set({
+    ownerId: currentUser.uid,
+    name,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    players: [{
+      id: currentUser.uid,
+      name: currentUser.displayName || currentUser.email,
+      email: currentUser.email
+    }],
+    rounds: [],
+    state: 'setup'
+  });
+
+  window.history.pushState({}, '', `?id=${tournamentId}`);
+  tournamentIdDisplay.textContent = tournamentId;
+  tournamentHeader.classList.remove('hidden');
+  setupScreen.classList.add('hidden');
+  joinScreen.classList.remove('hidden');
+  joinByIdScreen.classList.add('hidden');
+});
+
+// Unirse por link
+document.getElementById('join-tournament')?.addEventListener('click', async () => {
+  if (!tournamentId) return;
+  await joinTournament(tournamentId);
+});
+
+// Unirse por ID manual
+document.getElementById('join-manual')?.addEventListener('click', async () => {
+  const id = document.getElementById('manual-tournament-id').value.trim().toUpperCase();
+  if (!id) {
+    alert("⚠️ Ingresa un ID válido.");
+    return;
+  }
+  tournamentId = id;
+  await joinTournament(id);
+});
+
+async function joinTournament(id) {
+  const ref = db.collection('tournaments').doc(id);
+  const doc = await ref.get();
+  if (!doc.exists) {
+    alert('❌ Torneo no encontrado.');
+    return;
+  }
+
+  // Añadir jugador si no está ya
+  const player = {
+    id: currentUser.uid,
+    name: currentUser.displayName || currentUser.email,
+    email: currentUser.email
+  };
+
+  // Verificar si ya existe
+  const currentPlayers = doc.data().players || [];
+  const alreadyJoined = currentPlayers.some(p => p.id === currentUser.uid);
+
+  if (!alreadyJoined) {
+    await ref.update({
+      players: firebase.firestore.FieldValue.arrayUnion(player)
+    });
+  }
+
+  joinScreen.classList.add('hidden');
+  joinByIdScreen.classList.add('hidden');
+  appScreen.classList.remove('hidden');
+
+  // Escuchar cambios en tiempo real
+  ref.onSnapshot(doc => {
+    tournamentData = doc.data();
+    renderUI();
+  });
 }
 
 // Copiar link de la sala
@@ -579,17 +527,56 @@ document.getElementById('copy-room-link')?.addEventListener('click', () => {
   });
 });
 
-// En renderUI(), llama a updateTournamentHeader()
+// Render UI
 function renderUI() {
   if (!tournamentData) return;
-  
-  // ... tu código existente de jugadores, rondas, etc ...
-  
-  updateTournamentHeader(); // ← Añade esta línea
+
+  // Mostrar jugadores
+  const playersList = document.getElementById('players-list');
+  playersList.innerHTML = tournamentData.players.map(p => 
+    `<div class="editable-name">${p.name}${tournamentData.ownerId === p.id ? ' 👑' : ''}</div>`
+  ).join('');
+
+  // Rondas
+  const roundIndicator = document.getElementById('round-indicator');
+  roundIndicator.textContent = `Ronda ${tournamentData.rounds?.length || 0} / 7`;
+
+  // Historial
+  const historyDiv = document.getElementById('history');
+  historyDiv.innerHTML = tournamentData.rounds?.map((r, i) => `
+    <div class="history-item">
+      <strong>Ronda ${i+1}</strong><br>
+      ${r.matches?.map(m => `${m.team1.join(' + ')} vs ${m.team2.join(' + ')} → ${m.score}`).join('<br>')}
+    </div>
+  `).join('') || '<p>⏳ Sin partidos registrados.</p>';
+
+  // Actualizar info de usuario (¿soy creador?)
+  const ownerBadge = tournamentData.ownerId === currentUser.uid ? ' 👑' : '';
+  userInfo.innerHTML = `<span>${currentUser.displayName || currentUser.email}${ownerBadge}</span>`;
+
+  // Botón reiniciar solo si soy creador
+  const resetBtn = document.getElementById('reset-btn');
+  if (resetBtn) {
+    resetBtn.style.display = tournamentData.ownerId === currentUser.uid ? 'block' : 'none';
+  }
 }
+
+// Reiniciar torneo
+document.getElementById('reset-btn')?.addEventListener('click', async () => {
+  if (currentUser.uid !== tournamentData.ownerId) return;
+  if (confirm("¿Reiniciar el torneo? Se borrarán todos los partidos.")) {
+    await db.collection('tournaments').doc(tournamentId).update({
+      players: [],
+      rounds: [],
+      state: 'setup'
+    });
+    window.location.reload();
+  }
+});
   </script>
 </body>
 </html>
+
 
 
 
