@@ -274,6 +274,9 @@
     <header>
       <h1>⚡ Americano Pro</h1>
       <div id="user-info"></div>
+      <div id="tournament-header" class="hidden" style="text-align:center;margin-bottom:16px;">
+      <div class="badge badge-round" style="font-size:16px;">ID: <strong id="tournament-id-display">---</strong></div>
+      </div>
     </header>
 
     <p style="text-align:center;color:var(--text-secondary);font-size:14px;margin-bottom:24px">
@@ -281,26 +284,26 @@
     </p>
 
     <div id="login-screen" class="card animate">
-      <h2>🔐 Iniciar sesión</h2>
+      <h2>Iniciar sesión</h2>
       <p>Usá tu cuenta de Google para crear o unirte a un torneo.</p>
       <button id="login-btn" class="primary">🪪 Iniciar con Google</button>
     </div>
 
     <div id="setup" class="card animate hidden">
-      <h2>🎯 Crear Torneo</h2>
+      <h2>Crear Torneo</h2>
       <input type="text" id="tournament-name" placeholder="Nombre del torneo" value="Torneo Americano">
-      <button id="create-tournament" class="primary">✨ Crear y Comenzar</button>
+      <button id="create-tournament" class="primary">Crear y Comenzar</button>
     </div>
 
     <div id="join-screen" class="card animate hidden">
-      <h2>👥 Unirse a Torneo</h2>
+      <h2>Unirse a Torneo</h2>
       <p>Código: <strong id="current-tournament-id">---</strong></p>
-      <button id="join-tournament" class="secondary">✅ Unirse al Torneo</button>
-      <button id="copy-link" class="secondary">🔗 Copiar enlace</button>
+      <button id="join-tournament" class="secondary">Unirse al Torneo</button>
+      <button id="copy-link" class="secondary">Copiar enlace</button>
     </div>
 
     <div id="join-by-id" class="card animate hidden">
-      <h2>➕ Unirse por ID</h2>
+      <h2>Unirse por ID</h2>
       <input type="text" id="manual-tournament-id" placeholder="Ingresa el ID del torneo (ej: ABC123)">
       <button id="join-manual" class="secondary">✅ Unirse</button>
     </div>
@@ -331,8 +334,8 @@
         </table>
 
         <div class="actions-bar">
-          <button id="export-pdf" class="export">📄 Exportar a PDF</button>
-          <button id="generate-qr" class="qr">📱 Compartir QR</button>
+          <button id="export-pdf" class="export">Exportar a PDF</button>
+          <button id="copy-room-link" class="qr">Copiar link de la sala</button>
         </div>
 
         <div id="qrcode-container">
@@ -342,11 +345,11 @@
       </div>
 
       <div class="card">
-        <h2>📜 Historial (<span id="round-count">0</span>/7)</h2>
+        <h2>Historial (<span id="round-count">0</span>/7)</h2>
         <div id="history"></div>
       </div>
 
-      <button id="reset-btn" class="reset">🗑️ Reiniciar Torneo</button>
+      <button id="reset-btn" class="reset">Reiniciar Torneo</button>
     </div>
 
     <button id="logout-btn" class="secondary" style="width:100%;margin-top:12px;">🚪 Salir</button>
@@ -548,3 +551,4 @@
   </script>
 </body>
 </html>
+
