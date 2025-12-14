@@ -61,10 +61,39 @@
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="script.js"></script>
+  <!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+  // 🔥 Configuración mínima (reemplaza con tu config real después)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBx1234567890abcdefghijklm",
+    authDomain: "americano-pro.firebaseapp.com",
+    projectId: "americano-pro"
+  };
+
+  // Inicializar solo si no está inicializado
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  // Login con Google
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('login-btn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+          .catch(err => {
+            console.error("❌ Error:", err.code, err.message);
+            alert("Error: " + err.message);
+          });
+      });
+    }
+  });
+</script>
 </body>
+
 </html>
