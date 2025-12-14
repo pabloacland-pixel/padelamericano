@@ -5,10 +5,272 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚡ Americano Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --cyan: #00c9ff;
+      --green: #92fe9d;
+      --purple: #a18cd1;
+      --pink: #fbc2eb;
+      --dark: #0f172a;
+      --gray: #1e293b;
+      --card-bg: #1e293b;
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --light-bg: #f8fafc;
+      --light-card: #ffffff;
+      --light-text: #0f172a;
+      --light-secondary: #64748b;
+    }
+
+    [data-theme="light"] {
+      --card-bg: var(--light-card);
+      --text: var(--light-text);
+      --text-secondary: var(--light-secondary);
+      background: var(--light-bg) !important;
+      color: var(--light-text) !important;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--dark) 0%, var(--gray) 100%);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 16px;
+      min-height: 100vh;
+      transition: background 0.3s ease;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .theme-toggle {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .theme-toggle::before {
+      content: '🌙';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      transition: all 0.3s ease;
+    }
+
+    [data-theme="light"] .theme-toggle::before {
+      content: '☀️';
+      transform: translateX(20px);
+      background: #fde047;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 16px 0;
+      position: relative;
+      display: inline-block;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--pink));
+      border-radius: 2px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+      box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(0, 201, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    [data-theme="light"] .card {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-cancha1 { background: linear-gradient(90deg, var(--cyan), var(--green)); color: var(--dark); }
+    .badge-cancha2 { background: linear-gradient(90deg, var(--purple), var(--pink)); color: var(--dark); }
+    .badge-round { background: rgba(0, 201, 255, 0.15); color: var(--cyan); border: 1px solid var(--cyan); }
+
+    input, button {
+      padding: 14px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    input {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    [data-theme="light"] input {
+      background: #f1f5f9;
+      color: var(--light-text);
+      border: 1px solid #cbd5e1;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0, 201, 255, 0.2);
+    }
+
+    button {
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button.primary { background: linear-gradient(90deg, var(--cyan), var(--green)); color: var(--dark); font-size: 18px; padding: 16px; }
+    button.secondary { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
+    button.reset { background: linear-gradient(90deg, #ff416c, #ff4b2b); color: white; }
+    button.export { background: linear-gradient(90deg, #667eea, #764ba2); color: white; }
+    button.qr { background: linear-gradient(90deg, #56ab2f, #a8e6cf); color: var(--dark); }
+
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .vs { text-align: center; font-size: 28px; margin: 16px 0; color: var(--text); }
+    .vs::before { content: "⚡"; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .match-card { background: rgba(0,0,0,0.2); border-radius: 14px; padding: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+    .team-name { font-weight: 600; font-size: 16px; margin: 6px 0; }
+    .team-members { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    [data-theme="light"] th, [data-theme="light"] td { border-bottom: 1px solid #e2e8f0; }
+    th { color: var(--text-secondary); font-weight: 600; font-size: 14px; }
+    td { color: var(--text); }
+    .points { color: var(--green); font-weight: 700; }
+
+    .editable-name {
+      background: rgba(0, 201, 255, 0.1);
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      text-align: center;
+      margin: 4px;
+      flex: 0 0 45%;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(0, 201, 255, 0.3);
+    }
+    .editable-name:hover { background: rgba(0, 201, 255, 0.2); transform: scale(1.02); }
+
+    .result-card { background: rgba(255,255,255,0.03); border-radius: 14px; padding: 16px; text-align: center; }
+    .result-title { font-weight: 700; font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .input-group { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+    .input-group label { font-size: 14px; color: var(--text-secondary); min-width: 60px; text-align: right; }
+
+    .history-item {
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 8px 0;
+      border-left: 3px solid var(--cyan);
+    }
+
+    .actions-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    #qrcode-container {
+      text-align: center;
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      display: none;
+    }
+
+    #qrcode {
+      max-width: 180px;
+      margin: 0 auto;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 480px) {
+      .grid2 { grid-template-columns: 1fr; }
+      .actions-bar { flex-direction: column; }
+      h1 { font-size: 24px; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate { animation: fadeInUp 0.5s ease forwards; }
+  </style>
 </head>
 <body>
   <div class="container">
+
     <header>
       <h1>⚡ Americano Pro</h1>
       <div id="user-info"></div>
@@ -29,7 +291,7 @@
     <div id="join-screen" class="card hidden">
       <h2>👥 Unirse a Torneo</h2>
       <p>Código: <strong id="current-tournament-id">---</strong></p>
-      <button id="join-tournament" class="secondary">✅ Unirse</button>
+      <button id="join-tournament" class="secondary">✅ Unirse al Torneo</button>
       <button id="copy-link" class="secondary">🔗 Copiar enlace</button>
     </div>
 
@@ -59,56 +321,165 @@
         </table>
       </div>
     </div>
+
+    <button id="reset-btn" class="reset">🗑️ Reiniciar Torneo</button>
   </div>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<!-- 🔥 Firebase Modular SDK (versión estable) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-  // 🔑 TU CONFIGURACIÓN REAL
-
+  <script>
+    // 🔥 Firebase Config (reemplaza con tu apiKey real)
   const firebaseConfig = {
-  apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
-  authDomain: "americano-pro.firebaseapp.com",
-  projectId: "americano-pro",
-  storageBucket: "americano-pro.firebasestorage.app",
-  messagingSenderId: "349606784958",
-  appId: "1:349606784958:web:04437c58c864b1bc2553ef"
-};
+    apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
+    authDomain: "americano-pro.firebaseapp.com",
+    projectId: "americano-pro",
+    storageBucket: "americano-pro.firebasestorage.app",
+    messagingSenderId: "349606784958",
+    appId: "1:349606784958:web:04437c58c864b1bc2553ef"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-  // Escuchar estado de autenticación
-  onAuthStateChanged(auth, (user) => {
-    console.log("✅ Usuario detectado:", user?.email); // ← Verás esto en consola
-    if (user) {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('setup').style.display = 'block';
-      document.getElementById('user-info').innerHTML = `👤 ${user.displayName || user.email}`;
-    } else {
-      document.getElementById('login-screen').style.display = 'block';
-      document.getElementById('setup').style.display = 'none';
+    let currentUser = null;
+    let tournamentId = null;
+    let tournamentData = null;
+
+    // DOM Elements
+    const loginScreen = document.getElementById('login-screen');
+    const setupScreen = document.getElementById('setup');
+    const joinScreen = document.getElementById('join-screen');
+    const appScreen = document.getElementById('app');
+    const userInfo = document.getElementById('user-info');
+
+    // URL Params
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlTournamentId = urlParams.get('id');
+
+    // Escuchar estado de autenticación
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+      if (user) {
+        loginScreen.classList.add('hidden');
+        userInfo.innerHTML = `<span>${user.displayName || user.email}</span>`;
+        
+        if (urlTournamentId) {
+          tournamentId = urlTournamentId;
+          document.getElementById('current-tournament-id').textContent = tournamentId;
+          joinScreen.classList.remove('hidden');
+        } else {
+          setupScreen.classList.remove('hidden');
+        }
+      } else {
+        loginScreen.classList.remove('hidden');
+        setupScreen.classList.add('hidden');
+        joinScreen.classList.add('hidden');
+        appScreen.classList.add('hidden');
+      }
+    });
+
+    // Login con Google
+    document.getElementById('login-btn')?.addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .catch(error => {
+          console.error("❌ Error al iniciar sesión:", error.code, error.message);
+          alert("Error: " + error.message);
+        });
+    });
+
+    // Crear torneo
+    document.getElementById('create-tournament')?.addEventListener('click', async () => {
+      const name = document.getElementById('tournament-name').value || 'Torneo Americano';
+      tournamentId = Math.random().toString(36).substr(2, 6).toUpperCase();
+      
+      await db.collection('tournaments').doc(tournamentId).set({
+        ownerId: currentUser.uid,
+        name,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        players: [{
+          id: currentUser.uid,
+          name: currentUser.displayName || currentUser.email,
+          email: currentUser.email
+        }],
+        rounds: [],
+        state: 'setup'
+      });
+
+      window.history.pushState({}, '', `?id=${tournamentId}`);
+      document.getElementById('current-tournament-id').textContent = tournamentId;
+      setupScreen.classList.add('hidden');
+      joinScreen.classList.remove('hidden');
+    });
+
+    // Unirse al torneo
+    document.getElementById('join-tournament')?.addEventListener('click', async () => {
+      if (!tournamentId || !currentUser) return;
+
+      const tournamentRef = db.collection('tournaments').doc(tournamentId);
+      const doc = await tournamentRef.get();
+      if (!doc.exists) {
+        alert('❌ Torneo no encontrado.');
+        return;
+      }
+
+      await tournamentRef.update({
+        players: firebase.firestore.FieldValue.arrayUnion({
+          id: currentUser.uid,
+          name: currentUser.displayName || currentUser.email,
+          email: currentUser.email
+        })
+      });
+
+      joinScreen.classList.add('hidden');
+      appScreen.classList.remove('hidden');
+
+      tournamentRef.onSnapshot(doc => {
+        tournamentData = doc.data();
+        renderUI();
+      });
+    });
+
+    // Copiar enlace
+    document.getElementById('copy-link')?.addEventListener('click', () => {
+      const url = `${window.location.origin}${window.location.pathname}?id=${tournamentId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('✅ Enlace copiado. Envíaselo a los jugadores.');
+      }).catch(err => {
+        alert('⚠️ No se pudo copiar. Pega manualmente: ' + url);
+      });
+    });
+
+    // Render UI
+    function renderUI() {
+      if (!tournamentData) return;
+
+      // Jugadores
+      const playersList = document.getElementById('players-list');
+      playersList.innerHTML = tournamentData.players.map(p => 
+        `<div class="editable-name">${p.name}</div>`
+      ).join('');
+
+      // Rondas
+      const roundIndicator = document.getElementById('round-indicator');
+      roundIndicator.textContent = `Ronda ${tournamentData.rounds?.length || 0} / 7`;
+
+      // Historial
+      const historyDiv = document.getElementById('history');
+      historyDiv.innerHTML = tournamentData.rounds?.map((r, i) => `
+        <div class="history-item">
+          <strong>Ronda ${i+1}</strong><br>
+          ${r.matches?.map(m => `${m.team1.join(' + ')} vs ${m.team2.join(' + ')} → ${m.score}`).join('<br>')}
+        </div>
+      `).join('') || '<p>⏳ Sin partidos registrados.</p>';
     }
-  });
-
-  // Login con Google
-  document.getElementById('login-btn')?.addEventListener('click', async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      console.log("🎉 Login exitoso:", result.user.email);
-    } catch (error) {
-      console.error("❌ Error:", error.code, error.message);
-      alert("Error: " + error.message);
-    }
-  });
-</script>
+  </script>
 </body>
-
 </html>
-
-
-
