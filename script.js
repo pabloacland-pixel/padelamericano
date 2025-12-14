@@ -1,11 +1,17 @@
-// 🔥 Firebase Config (reemplazá con tus datos después)
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBx1234567890abcdefghijklm",
+  apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
   authDomain: "americano-pro.firebaseapp.com",
   projectId: "americano-pro",
-  storageBucket: "americano-pro.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123def456"
+  storageBucket: "americano-pro.firebasestorage.app",
+  messagingSenderId: "349606784958",
+  appId: "1:349606784958:web:04437c58c864b1bc2553ef"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -95,4 +101,5 @@ function renderPlayers() {
   list.innerHTML = tournamentData.players.map(p => 
     `<div class="editable-name">${p.name}</div>`
   ).join('');
+
 }
