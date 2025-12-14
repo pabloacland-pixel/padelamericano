@@ -67,12 +67,16 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  // 🔑 TU CONFIGURACIÓN REAL (reemplaza con tu apiKey)
+  // 🔑 TU CONFIGURACIÓN REAL
+
   const firebaseConfig = {
-    apiKey: "AIzaSyBx1234567890abcdefghijklm",
-    authDomain: "americano-pro.firebaseapp.com",
-    projectId: "americano-pro"
-  };
+  apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
+  authDomain: "americano-pro.firebaseapp.com",
+  projectId: "americano-pro",
+  storageBucket: "americano-pro.firebasestorage.app",
+  messagingSenderId: "349606784958",
+  appId: "1:349606784958:web:04437c58c864b1bc2553ef"
+};
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -105,5 +109,6 @@
 </body>
 
 </html>
+
 
 
