@@ -276,23 +276,33 @@
       <div id="user-info"></div>
     </header>
 
-    <div id="login-screen" class="card">
+    <p style="text-align:center;color:var(--text-secondary);font-size:14px;margin-bottom:24px">
+      8 jugadores, 7 rondas, 2 canchas
+    </p>
+
+    <div id="login-screen" class="card animate">
       <h2>🔐 Iniciar sesión</h2>
       <p>Usá tu cuenta de Google para crear o unirte a un torneo.</p>
       <button id="login-btn" class="primary">🪪 Iniciar con Google</button>
     </div>
 
-    <div id="setup" class="card hidden">
+    <div id="setup" class="card animate hidden">
       <h2>🎯 Crear Torneo</h2>
       <input type="text" id="tournament-name" placeholder="Nombre del torneo" value="Torneo Americano">
       <button id="create-tournament" class="primary">✨ Crear y Comenzar</button>
     </div>
 
-    <div id="join-screen" class="card hidden">
+    <div id="join-screen" class="card animate hidden">
       <h2>👥 Unirse a Torneo</h2>
       <p>Código: <strong id="current-tournament-id">---</strong></p>
       <button id="join-tournament" class="secondary">✅ Unirse al Torneo</button>
       <button id="copy-link" class="secondary">🔗 Copiar enlace</button>
+    </div>
+
+    <div id="join-by-id" class="card animate hidden">
+      <h2>➕ Unirse por ID</h2>
+      <input type="text" id="manual-tournament-id" placeholder="Ingresa el ID del torneo (ej: ABC123)">
+      <button id="join-manual" class="secondary">✅ Unirse</button>
     </div>
 
     <div id="app" class="hidden">
@@ -319,10 +329,28 @@
           <thead><tr><th>Jugador</th><th>Puntos</th><th>Partidos</th></tr></thead>
           <tbody id="ranking-body"></tbody>
         </table>
+
+        <div class="actions-bar">
+          <button id="export-pdf" class="export">📄 Exportar a PDF</button>
+          <button id="generate-qr" class="qr">📱 Compartir QR</button>
+        </div>
+
+        <div id="qrcode-container">
+          <h3>Código QR — Ranking Actual</h3>
+          <div id="qrcode"></div>
+        </div>
       </div>
+
+      <div class="card">
+        <h2>📜 Historial (<span id="round-count">0</span>/7)</h2>
+        <div id="history"></div>
+      </div>
+
+      <button id="reset-btn" class="reset">🗑️ Reiniciar Torneo</button>
     </div>
 
-    <button id="reset-btn" class="reset">🗑️ Reiniciar Torneo</button>
+    <button id="logout-btn" class="secondary" style="width:100%;margin-top:12px;">🚪 Salir</button>
+
   </div>
 
   <!-- Firebase SDKs -->
@@ -333,17 +361,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
-    // 🔥 Firebase Config (reemplaza con tu apiKey real)
-  const firebaseConfig = {
-    apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
-    authDomain: "americano-pro.firebaseapp.com",
-    projectId: "americano-pro",
-    storageBucket: "americano-pro.firebasestorage.app",
-    messagingSenderId: "349606784958",
-    appId: "1:349606784958:web:04437c58c864b1bc2553ef"
-    };
+    // 🔥 Firebase Config — REEMPLAZA CON TU API KEY REAL
+    const firebaseConfig = {
+  apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
+  authDomain: "americano-pro.firebaseapp.com",
+  projectId: "americano-pro",
+  storageBucket: "americano-pro.firebasestorage.app",
+  messagingSenderId: "349606784958",
+  appId: "1:349606784958:web:04437c58c864b1bc2553ef"
+};
 
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -352,18 +379,18 @@
     let tournamentId = null;
     let tournamentData = null;
 
-    // DOM Elements
+    // DOM
     const loginScreen = document.getElementById('login-screen');
     const setupScreen = document.getElementById('setup');
     const joinScreen = document.getElementById('join-screen');
+    const joinByIdScreen = document.getElementById('join-by-id');
     const appScreen = document.getElementById('app');
     const userInfo = document.getElementById('user-info');
 
-    // URL Params
     const urlParams = new URLSearchParams(window.location.search);
     const urlTournamentId = urlParams.get('id');
 
-    // Escuchar estado de autenticación
+    // Auth state
     auth.onAuthStateChanged(user => {
       currentUser = user;
       if (user) {
@@ -374,41 +401,43 @@
           tournamentId = urlTournamentId;
           document.getElementById('current-tournament-id').textContent = tournamentId;
           joinScreen.classList.remove('hidden');
+          joinByIdScreen.classList.add('hidden');
         } else {
           setupScreen.classList.remove('hidden');
+          joinByIdScreen.classList.remove('hidden');
         }
       } else {
         loginScreen.classList.remove('hidden');
         setupScreen.classList.add('hidden');
         joinScreen.classList.add('hidden');
+        joinByIdScreen.classList.add('hidden');
         appScreen.classList.add('hidden');
       }
     });
 
-    // Login con Google
+    // Login
     document.getElementById('login-btn')?.addEventListener('click', () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .catch(error => {
-          console.error("❌ Error al iniciar sesión:", error.code, error.message);
-          alert("Error: " + error.message);
-        });
+      auth.signInWithPopup(provider).catch(error => {
+        alert("❌ Error: " + error.message);
+      });
+    });
+
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+      auth.signOut().then(() => window.location.reload());
     });
 
     // Crear torneo
     document.getElementById('create-tournament')?.addEventListener('click', async () => {
-      const name = document.getElementById('tournament-name').value || 'Torneo Americano';
+      const name = document.getElementById('tournament-name').value || 'Torneo';
       tournamentId = Math.random().toString(36).substr(2, 6).toUpperCase();
       
       await db.collection('tournaments').doc(tournamentId).set({
         ownerId: currentUser.uid,
         name,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        players: [{
-          id: currentUser.uid,
-          name: currentUser.displayName || currentUser.email,
-          email: currentUser.email
-        }],
+        players: [{ id: currentUser.uid, name: currentUser.displayName || currentUser.email }],
         rounds: [],
         state: 'setup'
       });
@@ -417,43 +446,56 @@
       document.getElementById('current-tournament-id').textContent = tournamentId;
       setupScreen.classList.add('hidden');
       joinScreen.classList.remove('hidden');
+      joinByIdScreen.classList.add('hidden');
     });
 
-    // Unirse al torneo
+    // Unirse por link
     document.getElementById('join-tournament')?.addEventListener('click', async () => {
-      if (!tournamentId || !currentUser) return;
+      if (!tournamentId) return;
+      await joinTournament(tournamentId);
+    });
 
-      const tournamentRef = db.collection('tournaments').doc(tournamentId);
-      const doc = await tournamentRef.get();
+    // Unirse por ID manual
+    document.getElementById('join-manual')?.addEventListener('click', async () => {
+      const id = document.getElementById('manual-tournament-id').value.trim().toUpperCase();
+      if (!id) {
+        alert("⚠️ Ingresa un ID válido.");
+        return;
+      }
+      tournamentId = id;
+      await joinTournament(id);
+    });
+
+    async function joinTournament(id) {
+      const ref = db.collection('tournaments').doc(id);
+      const doc = await ref.get();
       if (!doc.exists) {
         alert('❌ Torneo no encontrado.');
         return;
       }
 
-      await tournamentRef.update({
+      await ref.update({
         players: firebase.firestore.FieldValue.arrayUnion({
           id: currentUser.uid,
-          name: currentUser.displayName || currentUser.email,
-          email: currentUser.email
+          name: currentUser.displayName || currentUser.email
         })
       });
 
       joinScreen.classList.add('hidden');
+      joinByIdScreen.classList.add('hidden');
       appScreen.classList.remove('hidden');
 
-      tournamentRef.onSnapshot(doc => {
+      ref.onSnapshot(doc => {
         tournamentData = doc.data();
         renderUI();
       });
-    });
+    }
 
     // Copiar enlace
     document.getElementById('copy-link')?.addEventListener('click', () => {
       const url = `${window.location.origin}${window.location.pathname}?id=${tournamentId}`;
       navigator.clipboard.writeText(url).then(() => {
-        alert('✅ Enlace copiado. Envíaselo a los jugadores.');
-      }).catch(err => {
-        alert('⚠️ No se pudo copiar. Pega manualmente: ' + url);
+        alert('✅ Enlace copiado.\nEnvíaselo a los jugadores.');
       });
     });
 
@@ -461,10 +503,10 @@
     function renderUI() {
       if (!tournamentData) return;
 
-      // Jugadores
+      // Mostrar jugadores
       const playersList = document.getElementById('players-list');
       playersList.innerHTML = tournamentData.players.map(p => 
-        `<div class="editable-name">${p.name}</div>`
+        `<div class="editable-name">${p.name}${tournamentData.ownerId === p.id ? ' 👑' : ''}</div>`
       ).join('');
 
       // Rondas
@@ -479,7 +521,30 @@
           ${r.matches?.map(m => `${m.team1.join(' + ')} vs ${m.team2.join(' + ')} → ${m.score}`).join('<br>')}
         </div>
       `).join('') || '<p>⏳ Sin partidos registrados.</p>';
+
+      // Actualizar info de usuario (¿soy creador?)
+      const ownerBadge = tournamentData.ownerId === currentUser.uid ? ' 👑' : '';
+      userInfo.innerHTML = `<span>${currentUser.displayName || currentUser.email}${ownerBadge}</span>`;
+
+      // Botón reiniciar solo si soy creador
+      const resetBtn = document.getElementById('reset-btn');
+      if (resetBtn) {
+        resetBtn.style.display = tournamentData.ownerId === currentUser.uid ? 'block' : 'none';
+      }
     }
+
+    // Reiniciar torneo
+    document.getElementById('reset-btn')?.addEventListener('click', async () => {
+      if (currentUser.uid !== tournamentData.ownerId) return;
+      if (confirm("¿Reiniciar el torneo? Se borrarán todos los partidos.")) {
+        await db.collection('tournaments').doc(tournamentId).update({
+          players: [],
+          rounds: [],
+          state: 'setup'
+        });
+        window.location.reload();
+      }
+    });
   </script>
 </body>
 </html>
