@@ -61,43 +61,49 @@
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script>
-  // 🔥 Configuración mínima (reemplaza con tu config real después)
+<!-- 🔥 Firebase Modular SDK (versión estable) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  // 🔑 TU CONFIGURACIÓN REAL (reemplaza con tu apiKey)
   const firebaseConfig = {
-  apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
-  authDomain: "americano-pro.firebaseapp.com",
-  projectId: "americano-pro",
-  storageBucket: "americano-pro.firebasestorage.app",
-  messagingSenderId: "349606784958",
-  appId: "1:349606784958:web:04437c58c864b1bc2553ef"
-};
+    apiKey: "AIzaSyBx1234567890abcdefghijklm",
+    authDomain: "americano-pro.firebaseapp.com",
+    projectId: "americano-pro"
+  };
 
-  // Inicializar solo si no está inicializado
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Escuchar estado de autenticación
+  onAuthStateChanged(auth, (user) => {
+    console.log("✅ Usuario detectado:", user?.email); // ← Verás esto en consola
+    if (user) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('setup').style.display = 'block';
+      document.getElementById('user-info').innerHTML = `👤 ${user.displayName || user.email}`;
+    } else {
+      document.getElementById('login-screen').style.display = 'block';
+      document.getElementById('setup').style.display = 'none';
+    }
+  });
 
   // Login con Google
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('login-btn');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup(provider)
-          .catch(err => {
-            console.error("❌ Error:", err.code, err.message);
-            alert("Error: " + err.message);
-          });
-      });
+  document.getElementById('login-btn')?.addEventListener('click', async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log("🎉 Login exitoso:", result.user.email);
+    } catch (error) {
+      console.error("❌ Error:", error.code, error.message);
+      alert("Error: " + error.message);
     }
   });
 </script>
 </body>
 
 </html>
+
 
