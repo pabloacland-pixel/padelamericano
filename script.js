@@ -14,6 +14,9 @@ const firebaseConfig = {
   appId: "1:349606784958:web:04437c58c864b1bc2553ef"
 };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -103,3 +106,4 @@ function renderPlayers() {
   ).join('');
 
 }
+
