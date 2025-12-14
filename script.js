@@ -57,9 +57,18 @@ auth.onAuthStateChanged(user => {
 });
 
 // Login
+// Reemplaza tu función de login por esta (solo para probar)
 document.getElementById('login-btn')?.addEventListener('click', () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider);
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      console.log("✅ Login exitoso:", result.user.displayName);
+      alert("¡Bienvenido, " + result.user.displayName + "!");
+    })
+    .catch(error => {
+      console.error("❌ Error de Firebase:", error.code, error.message);
+      alert("Error: " + error.code + "\n\nAbre la consola (F12) para más detalles.");
+    });
 });
 
 // Crear torneo
@@ -106,4 +115,5 @@ function renderPlayers() {
   ).join('');
 
 }
+
 
