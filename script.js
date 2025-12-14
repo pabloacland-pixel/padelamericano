@@ -1,4 +1,4 @@
-// 🔥 Firebase Compat SDK (mejor para GitHub Pages)
+// 🔥 Firebase Compat SDK
 const firebaseConfig = {
   apiKey: "AIzaSyAvbsf-qD7HgshBeTbhS_ZXyjnur_xYNGY",
   authDomain: "americano-pro.firebaseapp.com",
@@ -8,7 +8,6 @@ const firebaseConfig = {
   appId: "1:349606784958:web:04437c58c864b1bc2553ef"
 };
 
-// Inicializar
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -17,10 +16,10 @@ let currentUser = null;
 let tournamentId = null;
 let tournamentData = null;
 
-// DOM
+// DOM Elements
 const loginScreen = document.getElementById('login-screen');
 const setupScreen = document.getElementById('setup');
-const joinScreen = document.getElementById('join-screen');
+const joinByIdScreen = document.getElementById('join-by-id');
 const appScreen = document.getElementById('app');
 const userInfo = document.getElementById('user-info');
 
@@ -36,15 +35,15 @@ auth.onAuthStateChanged(user => {
     
     if (urlTournamentId) {
       tournamentId = urlTournamentId;
-      document.getElementById('current-tournament-id').textContent = tournamentId;
-      joinScreen.classList.remove('hidden');
+      document.getElementById('manual-tournament-id').value = tournamentId; // Mostrar ID en input
+      joinByIdScreen.classList.remove('hidden');
     } else {
       setupScreen.classList.remove('hidden');
     }
   } else {
     loginScreen.classList.remove('hidden');
     setupScreen.classList.add('hidden');
-    joinScreen.classList.add('hidden');
+    joinByIdScreen.classList.add('hidden');
     appScreen.classList.add('hidden');
   }
 });
@@ -55,8 +54,7 @@ document.getElementById('login-btn')?.addEventListener('click', async () => {
   try {
     await auth.signInWithPopup(provider);
   } catch (error) {
-    console.error("❌ Error:", error.message);
-    alert("Error: " + error.message);
+    alert("❌ Error: " + error.message);
   }
 });
 
@@ -78,16 +76,19 @@ document.getElementById('create-tournament')?.addEventListener('click', async ()
   });
 
   window.history.pushState({}, '', `?id=${tournamentId}`);
-  document.getElementById('current-tournament-id').textContent = tournamentId;
   setupScreen.classList.add('hidden');
-  joinScreen.classList.remove('hidden');
+  joinByIdScreen.classList.remove('hidden');
 });
 
-// ✅ UNIRSE AL TORNEO (CORREGIDO)
-document.getElementById('join-tournament')?.addEventListener('click', async () => {
-  if (!tournamentId || !currentUser) return;
+// Unirse por ID manual
+document.getElementById('join-manual')?.addEventListener('click', async () => {
+  const id = document.getElementById('manual-tournament-id').value.trim().toUpperCase();
+  if (!id) {
+    alert("⚠️ Ingresa un ID válido.");
+    return;
+  }
 
-  const ref = db.collection('tournaments').doc(tournamentId);
+  const ref = db.collection('tournaments').doc(id);
   const doc = await ref.get();
   if (!doc.exists) {
     alert('❌ Torneo no encontrado.');
@@ -107,21 +108,14 @@ document.getElementById('join-tournament')?.addEventListener('click', async () =
     });
   }
 
-  joinScreen.classList.add('hidden');
+  // Cambiar a pantalla de juego
+  joinByIdScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
 
-  // Escuchar en tiempo real
+  // Escuchar cambios en tiempo real
   ref.onSnapshot(doc => {
     tournamentData = doc.data();
     renderUI();
-  });
-});
-
-// Copiar enlace
-document.getElementById('copy-link')?.addEventListener('click', () => {
-  const url = `${window.location.origin}${window.location.pathname}?id=${tournamentId}`;
-  navigator.clipboard.writeText(url).then(() => {
-    alert('✅ Link copiado:\n' + url);
   });
 });
 
@@ -129,8 +123,22 @@ document.getElementById('copy-link')?.addEventListener('click', () => {
 function renderUI() {
   if (!tournamentData) return;
 
+  // Mostrar jugadores
   const playersList = document.getElementById('players-list');
-  playersList.innerHTML = tournamentData.players?.map(p => 
+  playersList.innerHTML = tournamentData.players.map(p => 
     `<div class="editable-name">${p.name}${tournamentData.ownerId === p.id ? ' 👑' : ''}</div>`
-  ).join('') || '<p>⏳ Sin jugadores.</p>';
+  ).join('');
+
+  // Rondas
+  const roundIndicator = document.getElementById('round-indicator');
+  roundIndicator.textContent = `Ronda ${tournamentData.rounds?.length || 0} / 7`;
+
+  // Historial
+  const historyDiv = document.getElementById('history');
+  historyDiv.innerHTML = tournamentData.rounds?.map((r, i) => `
+    <div class="history-item">
+      <strong>Ronda ${i+1}</strong><br>
+      ${r.matches?.map(m => `${m.team1.join(' + ')} vs ${m.team2.join(' + ')} → ${m.score}`).join('<br>')}
+    </div>
+  `).join('') || '<p>⏳ Sin partidos registrados.</p>';
 }
