@@ -549,8 +549,47 @@
         window.location.reload();
       }
     });
+
+    // Mostrar ID del torneo
+function updateTournamentHeader() {
+  const header = document.getElementById('tournament-header');
+  const idDisplay = document.getElementById('tournament-id-display');
+  if (tournamentId) {
+    header.classList.remove('hidden');
+    idDisplay.textContent = tournamentId;
+  } else {
+    header.classList.add('hidden');
+  }
+}
+
+// Copiar link de la sala
+document.getElementById('copy-room-link')?.addEventListener('click', () => {
+  const url = `${window.location.origin}${window.location.pathname}?id=${tournamentId}`;
+  navigator.clipboard.writeText(url).then(() => {
+    alert(`✅ Link copiado:\n${url}\n\nEnvíalo por WhatsApp, Telegram, etc.`);
+  }).catch(() => {
+    // Fallback para iOS antiguo
+    const textarea = document.createElement('textarea');
+    textarea.value = url;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert(`✅ Link copiado:\n${url}`);
+  });
+});
+
+// En renderUI(), llama a updateTournamentHeader()
+function renderUI() {
+  if (!tournamentData) return;
+  
+  // ... tu código existente de jugadores, rondas, etc ...
+  
+  updateTournamentHeader(); // ← Añade esta línea
+}
   </script>
 </body>
 </html>
+
 
 
